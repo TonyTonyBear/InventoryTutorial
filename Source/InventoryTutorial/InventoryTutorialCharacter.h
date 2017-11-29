@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Pickup.h"
 #include "InventoryTutorialCharacter.generated.h"
 
 class UInputComponent;
@@ -49,7 +50,7 @@ public:
 	AInventoryTutorialCharacter();
 
 protected:
-	virtual void BeginPlay();
+	virtual void BeginPlay() override;
 
 public:
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
@@ -137,6 +138,24 @@ public:
 	FORCEINLINE class USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+
+
+//Code added by Inventory Tutorial...
+private:
+	//Raycasts in front of the character to find usable items.
+	void Raycast();
+
+	//Reference to the last item seen pickup item. Nullptr if none.
+	APickup* LastItemSeen;
+
+public:
+	virtual void Tick(float DeltaSeconds) override;
+
+protected:
+	//The range of the raycast.
+	UPROPERTY(EditAnywhere)
+	float RaycastRange = 250.0f;
+
 
 };
 

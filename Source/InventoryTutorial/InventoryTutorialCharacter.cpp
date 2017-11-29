@@ -88,6 +88,9 @@ void AInventoryTutorialCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+	//Initializing the reference to the last item seen.
+	LastItemSeen = nullptr;
+
 	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
 	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 
@@ -294,4 +297,46 @@ bool AInventoryTutorialCharacter::EnableTouchscreenMovement(class UInputComponen
 		//PlayerInputComponent->BindTouch(EInputEvent::IE_Repeat, this, &AInventoryTutorialCharacter::TouchUpdate);
 	}
 	return bResult;
+}
+
+void AInventoryTutorialCharacter::Raycast()
+{
+	//Calculating start and end locations
+	FVector StartLocation = FirstPersonCameraComponent->GetComponentLocation();
+	FVector EndLocation = StartLocation + (FirstPersonCameraComponent->GetForwardVector() * RaycastRange);
+
+	FHitResult RaycastHit;
+
+	//Raycast should ignore the character
+	FCollisionQueryParams CQP;
+	CQP.AddIgnoredActor(this);
+
+	//Raycast
+	GetWorld()->LineTraceSingleByChannel(RaycastHit, StartLocation, EndLocation, ECollisionChannel::ECC_WorldDynamic, CQP);
+
+	APickup* Pickup = Cast<APickup>(RaycastHit.GetActor());
+
+	if (LastItemSeen && LastItemSeen != Pickup)
+	{
+		//If our character sees a different pickup then disable the glowing effect on the previously seen item.
+		LastItemSeen->SetGlowEffect(false);	
+	}
+	if (Pickup)
+	{
+		//Enable the glow effect on the current item
+		LastItemSeen = Pickup;
+		Pickup->SetGlowEffect(true);
+	}
+
+	//Reinitialize
+	else
+		LastItemSeen = nullptr;
+}
+
+void AInventoryTutorialCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	
+	//Raycast every frame
+	Raycast();
 }
