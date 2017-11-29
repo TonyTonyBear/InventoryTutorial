@@ -7,6 +7,8 @@
 #include "Pickup.h"
 #include "InventoryTutorialCharacter.generated.h"
 
+#define	MAX_INVENTORY_ITEMS 4
+
 class UInputComponent;
 
 UCLASS(config=Game)
@@ -156,6 +158,12 @@ protected:
 	UPROPERTY(EditAnywhere)
 	float RaycastRange = 250.0f;
 
+	//Handles the pickup input
+	UFUNCTION()
+	void PickupItem();
 
+	//The actual inventory
+	UPROPERTY(VisibleAnywhere)
+	TArray<APickup*> Inventory;
 };
 

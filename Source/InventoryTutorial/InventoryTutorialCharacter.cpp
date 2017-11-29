@@ -91,6 +91,9 @@ void AInventoryTutorialCharacter::BeginPlay()
 	//Initializing the reference to the last item seen.
 	LastItemSeen = nullptr;
 
+	//Initializing the inventory
+	Inventory.SetNum(MAX_INVENTORY_ITEMS);
+
 	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
 	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 
@@ -114,6 +117,9 @@ void AInventoryTutorialCharacter::SetupPlayerInputComponent(class UInputComponen
 {
 	// set up gameplay key bindings
 	check(PlayerInputComponent);
+
+	//Pickup functionality
+	PlayerInputComponent->BindAction("Pickup", IE_Pressed, this, &AInventoryTutorialCharacter::PickupItem);
 
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
@@ -339,4 +345,23 @@ void AInventoryTutorialCharacter::Tick(float DeltaSeconds)
 	
 	//Raycast every frame
 	Raycast();
+}
+
+void AInventoryTutorialCharacter::PickupItem()
+{
+	if (LastItemSeen)
+	{
+		//Find the first available slot
+		int32 AvailableSlot = Inventory.Find(nullptr);
+
+		if (AvailableSlot != INDEX_NONE)
+		{
+			//Add the item to the first valid slot we found
+			Inventory[AvailableSlot] = LastItemSeen;
+			//Destroy the item from the game.
+			LastItemSeen->Destroy();
+		}
+		else
+			GLog->Log("Cannot carry more items.");
+	}
 }
